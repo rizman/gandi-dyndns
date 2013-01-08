@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+sys.path.append('src')
 import argparse
 import urllib2
 import gandirpclib.domain
@@ -34,7 +35,9 @@ def main():
 	records = args.records
 	rtypes = []
 	ipv4 = get_public_ipv4()
+        #need to refactor get_public_ipv6
 	#ipv6 = get_public_ipv6()
+        ipv6 = ''
 	
 	
 	print ('Public ipv4 is ' + ipv4)
