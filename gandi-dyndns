@@ -5,48 +5,60 @@ import xmlrpclib
 import getopt
 import sys
 import urllib2
+import argparse
 
 api = xmlrpclib.ServerProxy('https://rpc.gandi.net/xmlrpc/')
 
 def main():
     apikey = ''
     domain = ''
-    record = ''
+    records = []
+    ipv4 = ''
+    ipv6 = ''
+    extipv4 = ''
+    extipv6 = ''
     rtypes = []
 
-    from optparse import OptionParser
-    optp = OptionParser()
-    optp.add_option('-a', '--api',    help='Specify API key')
-    optp.add_option('-d', '--domain', help='Specify domain')
-    optp.add_option('-4', '--ipv4',   help='Enable IPv4', action='store_true')
-    optp.add_option('-6', '--ipv6',   help='Enable IPv6', action='store_true')
-    optp.add_option('-r', '--record', help='Specify record data')
-    optp.add_option('--extip4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-    optp.add_option('--extip6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-    (opts, args) = optp.parse_args()
+    #from optparse import OptionParser
+    #optp = OptionParser()
+    #optp.add_option('-a', '--api',    help='Specify API key')
+    #optp.add_option('-d', '--domain', help='Specify domain')
+    #optp.add_option('-4', '--ipv4',   help='Enable IPv4', action='store_true')
+    #optp.add_option('-6', '--ipv6',   help='Enable IPv6', action='store_true')
+    #optp.add_option('-r', '--record', help='Specify record data')
+    #optp.add_option('--extip4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    #optp.add_option('--extip6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    #(opts, args) = optp.parse_args()
    
-    # Process
-    if opts.ipv4: rtypes.append('A')
-    if opts.ipv6: rtypes.append('AAAA')
-    domain = opts.domain
-    apikey = opts.api
-    record = opts.record    
-    extip4 = opts.extip4
-    extip6 = opts.extip6
+    ## Process
+    #if opts.ipv4: rtypes.append('A')
+    #if opts.ipv6: rtypes.append('AAAA')
+    #domain = opts.domain
+    #apikey = opts.api
+    #record = opts.record    
+    #extip4 = opts.extip4
+    #extip6 = opts.extip6
     
-    if apikey == None or apikey == '':
-        print ("No Apikey specified")
-        usage()
-        sys.exit()
-        
+    parser = argparse.ArgumentParser(description = "Update your Gandi.net DNS Zone file")
+    parser.add_argument('api', help='Your Gandi.Net API Key')
+    parser.add_argument('domain', help='The domain you want to update')
+    parser.add_argument('records', help='The records you want to update', action='append', nargs='+')
+    parser.add_argument('-ipv4', help='Enable IPv4 support', action='store_true', default='True')
+    parser.add_argument('-ipv6', help='Enable IPv6 support', action='store_true', default='False')
+    parser.add_argument('-extipv4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    parser.add_argument('-extipv6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    
+    args = parser.parse_args()
+    if args.ipv4 == "True": rtypes.append('A')
+    if args.ipv6 == "True": rtypes.append('AAAA')
+    domain = args.domain
+    records = args.records
+    extipv4 = args.extipv4
+    extipv6 = args.extipv6
+           
     #This call will always return true. cf comment regarding check_if_apikey_exists    
     if check_if_apikey_exists(apikey) == False:
         print ("Apikey " + apikey + " does not exist or is malformed")
-        usage()
-        sys.exit()
-        
-    if domain == None:
-        print ("No Domain specified")
         usage()
         sys.exit()
         
@@ -59,8 +71,11 @@ def main():
     if not rtypes:
         rtypes = ['A']
 
-    addresses = {}
-
+    #addresses = {}
+    addresses = []
+    
+    #sys.exit()
+    
     for rtype in rtypes:
         if check_if_record_exists(apikey, get_zoneid_by_domain(apikey, domain), record, rtype) == False:
             print (rtype + " Record " + record + " does not exist, please create")
