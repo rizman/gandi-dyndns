@@ -10,7 +10,7 @@ from gandilib.zonefileupdater import ZoneFileUpdater
 version = '2.0'
 
 def main():	
-	parser = argparse.ArgumentParser(description = "Update your Gandi.net DNS Zone file")
+	parser = argparse.ArgumentParser(prog='Gandi-Dyndns', description = "Update your Gandi.net DNS Zone file")
 	parser.add_argument('api', help='Your Gandi.Net API Key')
 	parser.add_argument('domain', help='The domain you want to update')
 	parser.add_argument('records', help='The records you want to update', action='append', nargs='+')
@@ -18,11 +18,13 @@ def main():
 	parser.add_argument('-ipv6', help='Enable IPv6 support', action='store_true', default='False')
 	parser.add_argument('-extipv4', default='', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
 	parser.add_argument('-extipv6', default='', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-	parser.add_argument('-v', help='Print gandi-dyndns version', action='store_true', default='True')
+	parser.add_argument('-v', default='', help='Print gandi-dyndns version', action='version', version='Current version of %(prog)s is ' + version)
+	
 	
 	args = parser.parse_args()
+	ver = args.v
 	
-	if args.v == True:
+	if version == True:
 		print('Current version is ' + version)
 		sys.exit()
 	
@@ -44,8 +46,10 @@ def main():
 	ipv4 = ''
 	ipv6 = ''
 	
-	if args.ipv4 == 'True' or args.ipv4: rtypes.append('A')
-	if args.ipv6 == 'True' or args.ipv6: rtypes.append('AAAA')
+	if args.ipv4 == 'True' or args.ipv4 == True: 
+		rtypes.append('A')
+	if args.ipv6 == 'True' or args.ipv6 == True: 
+		rtypes.append('AAAA')
 	
 	if args.extipv4 != '' : 
 		ipv4 = args.extipv4
