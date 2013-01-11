@@ -22,7 +22,7 @@ def main():
 	#Try to connect to Gandi.Net rpc service
 	print('Trying to connect to Gandi.Net RPC Service...')
 	try:
-		api_version = gandirpclib.domain.get_api_version(args.api)
+		api_version = gandirpclib.domain.api_version_info(args.api)
 		print('Connection successful')
 		print('Current Gandi.Net Api version is: ' + api_version['api_version'])
 	except:
@@ -34,20 +34,22 @@ def main():
 	domain = args.domain
 	records = args.records
 	rtypes = []
-	ipv4 = get_public_ipv4()
-        #need to refactor get_public_ipv6
-	#ipv6 = get_public_ipv6()
-        ipv6 = ''
-	
-	
-	print ('Public ipv4 is ' + ipv4)
-	print ('Public ipv6 is ' + ipv6)
+	ipv4 = ''
+	ipv6 = ''
 	
 	if args.ipv4 == 'True' or args.ipv4: rtypes.append('A')
 	if args.ipv6 == 'True' or args.ipv6: rtypes.append('AAAA')
 	
-	if args.extipv4 != '' : ipv4 = args.extipv4 
-	if args.extipv6 != '' : ipv6 = args.extipv6 
+	if args.extipv4 != '' : 
+		ipv4 = args.extipv4
+	else:
+		ipv4 = get_public_ipv4()
+		 
+	if args.extipv6 != '' : 
+		ipv6 = args.extipv6
+	#else:
+		#need to refactor get_public_ipv6. icanhazipv6 does not exist
+		#ipv6 = get_public_ipv6()
 	
 	#Check if domain exists
 	if gandirpclib.domain.exists(api, domain) == False:

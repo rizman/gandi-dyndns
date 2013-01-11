@@ -7,9 +7,23 @@ import xmlrpclib
 
 api = xmlrpclib.ServerProxy('https://rpc.gandi.net/xmlrpc/')
 
-def get_api_version(apikey):
+def api_version_info(apikey):
     return api.version.info(apikey)
 
+def zone_version_list(apikey, zone_id):
+    return api.domain.zone.version.list(apikey, zone_id)
+
+def zone_version_new(apikey, zone_id):
+    return api.domain.zone.version.new(apikey, zone_id)
+
+def zone_record_list(apikey, zone_id, version_id=0, opts={}):
+    return api.domain.zone.record.list(apikey, zone_id, version_id, opts)
+
+def zone_version_set(apikey, zone_id, version_id):
+    return api.domain.zone.version.set(apikey, zone_id, version_id)
+
+def zone_record_update(apikey, zone_id, version_id, opts={}, params={}):
+    return api.domain.zone.record.update(apikey, zone_id, version_id, opts, params)
 '''
 Check if the given domain exists
 '''
