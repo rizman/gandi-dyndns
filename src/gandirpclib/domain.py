@@ -24,6 +24,13 @@ def zone_version_set(apikey, zone_id, version_id):
 
 def zone_record_update(apikey, zone_id, version_id, opts={}, params={}):
     return api.domain.zone.record.update(apikey, zone_id, version_id, opts, params)
+
+def zone_record_delete(apikey, zone_id, version_id, opts={}):
+    return api.domain.zone.record.delete(apikey, zone_id, version_id, opts)
+
+def zone_record_add(apikey, zone_id, version_id, params={}):
+    return api.domain.zone.record.add(apikey, zone_id, version_id, params)
+
 '''
 Check if the given domain exists
 '''

@@ -39,7 +39,7 @@ class ZoneFileUpdater:
             zoneRecordReturn = gandirpclib.domain.zone_record_list(self.api, self.zone_id, opts={'name': record.record, 'type': record.rtype})
             if zoneRecordReturn != []:
                 if zoneRecordReturn[0]['value'] != record.ip:
-                    record.id = zoneRecordReturn[0]['id']
+                    record.record_id = zoneRecordReturn[0]['id']
                     changed_records.append(record)
                 else:
                     print('Record: ' + record.record + ', Type: ' + record.rtype + ' unchanged. Nothing to be done.')
@@ -55,8 +55,8 @@ class ZoneFileUpdater:
             for record in self.records:
                 record.Update(self.api, self.zone_id, self.version_id)
                 
-            #if gandirpclib.domain.zone_version_set(self.api, self.zone_id, self.version_id) == True:
-            #    print('Zone updated.')
+            if gandirpclib.domain.zone_version_set(self.api, self.zone_id, self.version_id) == True:
+                print('Zone updated.')
         else:
             print ('No change detected. Nothing will be updated')
         
