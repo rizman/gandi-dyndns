@@ -1,6 +1,8 @@
 #!/usr/bin/python
+import re
 
 import sys
+
 sys.path.append('src')
 import argparse
 import urllib2
@@ -9,76 +11,87 @@ from gandilib.zonefileupdater import ZoneFileUpdater
 
 version = '2.0'
 
-def main():	
-	parser = argparse.ArgumentParser(prog='Gandi-Dyndns', description = "Update your Gandi.net DNS Zone file")
-	parser.add_argument('api', help='Your Gandi.Net API Key')
-	parser.add_argument('domain', help='The domain you want to update')
-	parser.add_argument('records', help='The records you want to update', action='append', nargs='+')
-	parser.add_argument('-ipv4', help='Enable IPv4 support', action='store_true', default='True')
-	parser.add_argument('-ipv6', help='Enable IPv6 support', action='store_true', default='False')
-	parser.add_argument('-extipv4', default='', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-	parser.add_argument('-extipv6', default='', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-	parser.add_argument('-v', default='', help='Print gandi-dyndns version', action='version', version='Current version of %(prog)s is ' + version)
-	
-	
-	args = parser.parse_args()
-	ver = args.v
-	
-	if version == True:
-		print('Current version is ' + version)
-		sys.exit()
-	
-	#Try to connect to Gandi.Net rpc service
-	print('Trying to connect to Gandi.Net RPC Service...')
-	try:
-		api_version = gandirpclib.domain.api_version_info(args.api)
-		print('Connection successful')
-		print('Current Gandi.Net Api version is: ' + api_version['api_version'])
-	except:
-		print('Connection failed. Aborting.')
-		sys.exit()
-	
-	#Init some values based on the passed parameters	
-	api = args.api
-	domain = args.domain
-	records = args.records
-	rtypes = []
-	ipv4 = ''
-	ipv6 = ''
-	
-	if args.ipv4 == 'True' or args.ipv4 == True: 
-		rtypes.append('A')
-	if args.ipv6 == 'True' or args.ipv6 == True: 
-		rtypes.append('AAAA')
-	
-	if args.extipv4 != '' : 
-		ipv4 = args.extipv4
-	else:
-		ipv4 = get_public_ipv4()
-		 
-	if args.extipv6 != '' : 
-		ipv6 = args.extipv6
-	#else:
-		#need to refactor get_public_ipv6. icanhazipv6 does not exist
-		#ipv6 = get_public_ipv6()
-	
-	#Check if domain exists
-	if gandirpclib.domain.exists(api, domain) == False:
-		print('Domain ' + domain + ' does not exist. Aborting.')
-		sys.exit()
-	
-	#records is a list of list, hence records[0]
-	zFile = ZoneFileUpdater(api, domain, records[0], rtypes, ipv4, ipv6)
-	zFile.Update()
-	
-	print ('Done. Thanks for using gandi-dyndns')
-	
-	
+
+def main():
+    parser = argparse.ArgumentParser(prog='Gandi-Dyndns', description="Update your Gandi.net DNS Zone file")
+    parser.add_argument('api', help='Your Gandi.Net API Key')
+    parser.add_argument('domain', help='The domain you want to update')
+    parser.add_argument('records', help='The records you want to update', action='append', nargs='+')
+    parser.add_argument('-ipv4', help='Enable IPv4 support', action='store_true', default='True')
+    parser.add_argument('-ipv6', help='Enable IPv6 support', action='store_true', default='False')
+    parser.add_argument('-extipv4', default='',
+                        help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    parser.add_argument('-extipv6', default='',
+                        help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
+    parser.add_argument('-v', default='', help='Print gandi-dyndns version', action='version',
+                        version='Current version of %(prog)s is ' + version)
+
+    args = parser.parse_args()
+    ver = args.v
+
+    if version == True:
+        print('Current version is ' + version)
+        sys.exit()
+
+    #Try to connect to Gandi.Net rpc service
+    print('Trying to connect to Gandi.Net RPC Service...')
+    try:
+        api_version = gandirpclib.domain.api_version_info(args.api)
+        print('Connection successful')
+        print('Current Gandi.Net Api version is: ' + api_version['api_version'])
+    except:
+        print('Connection failed. Aborting.')
+        sys.exit()
+
+    #Init some values based on the passed parameters
+    api = args.api
+    domain = args.domain
+    records = args.records
+    rtypes = []
+    ipv4 = ''
+    ipv6 = ''
+
+    if args.ipv4 == 'True' or args.ipv4 == True:
+        rtypes.append('A')
+    if args.ipv6 == 'True' or args.ipv6 == True:
+        rtypes.append('AAAA')
+
+    if args.extipv4 != '':
+        ipv4 = args.extipv4
+    else:
+        ipv4 = get_public_ipv4()
+
+    if args.extipv6 != '':
+        ipv6 = args.extipv6
+    #else:
+    #need to refactor get_public_ipv6. icanhazipv6 does not exist
+    #ipv6 = get_public_ipv6()
+
+    #Check if domain exists
+    if gandirpclib.domain.exists(api, domain) == False:
+        print('Domain ' + domain + ' does not exist. Aborting.')
+        sys.exit()
+
+    #records is a list of list, hence records[0]
+    zFile = ZoneFileUpdater(api, domain, records[0], rtypes, ipv4, ipv6)
+    zFile.Update()
+
+    print('Done. Thanks for using gandi-dyndns')
+
+
 def get_public_ipv4():
     try:
-        return urllib2.urlopen('http://api.externalip.net/ip/').read()
+        resp = urllib2.urlopen('http://checkip.dyndns.org/').read()
+        pattern = "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"
+        regex = re.compile(pattern)
+        result = regex.findall(resp)
+        if result:
+            return result[0]
+        else:
+            return ''
     except:
         return None
+
 
 def get_public_ipv6():
     data = urllib2.urlopen("http://icanhazipv6.com").read()
@@ -86,8 +99,9 @@ def get_public_ipv6():
     if matches:
         return matches.group(1)
     return None
-				    
+
+
 if __name__ == '__main__':
-	main()
+    main()
 
 

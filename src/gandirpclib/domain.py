@@ -6,6 +6,7 @@ Created on 4 janv. 2013
 import xmlrpclib
 
 api = xmlrpclib.ServerProxy('https://rpc.gandi.net/xmlrpc/')
+# api = xmlrpclib.ServerProxy('https://rpc.ote.gandi.net/xmlrpc/')
 
 def api_version_info(apikey):
     return api.version.info(apikey)
